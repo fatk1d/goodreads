@@ -1,5 +1,6 @@
 import webbrowser
 import collections
+import math
 
 
 from .session import GoodreadsSession
