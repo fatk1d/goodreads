@@ -80,6 +80,28 @@ class GoodreadsClient():
         resp = self.request("author/show", {'id': author_id})
         return GoodreadsAuthor(resp['author'], self)
 
+    def author_list(self, author_id, page=1):
+        """List author's books.  Returns a list of ALL of the authors books in
+           a list of tuples (<book id>, <title without series>]
+        """
+        resp = self.request("author/list", {'page': page, 'id': author_id})
+        books = resp['author']['books']['book']
+        if int(resp['author']['books']['@total']) == 1:
+          book_list = [(books['id']['#text'],books['title_without_series'])]
+        else:
+          book_list = [(book['id']['#text'],book['title_without_series']) for book in books]
+
+        pages = math.ceil(int(resp['author']['books']['@total'])/30)
+        page += 1
+
+        while page <= pages:
+            resp = self.request("author/list", {'page': page, 'id': author_id})
+            books = resp['author']['books']['book']
+            book_list = book_list + [(book['id']['#text'],book['title_without_series']) for book in books]
+            page +=1
+
+        return book_list
+
     def find_author(self, author_name):
         """Find an author by name"""
         resp = self.request("api/author_url/%s" % author_name, {})
